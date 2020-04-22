@@ -11,5 +11,6 @@ public class Main
     {
         File file = new File("template/index.html");
         System.out.println(file.length());
+        System.out.println("run1");
     }
 }
