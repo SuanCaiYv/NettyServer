@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User</title>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script>
+    </script>
+    <style>
+        .login-button { /* 按钮美化 */
+            width: 60px; /* 宽度 */
+            height: 40px; /* 高度 */
+            border-width: 0px; /* 边框宽度 */
+            border-radius: 3px; /* 边框半径 */
+            background: #1E90FF; /* 背景颜色 */
+            cursor: pointer; /* 鼠标移入按钮范围时出现手势 */
+            outline: none; /* 不显示轮廓线 */
+            font-family: "PingFang SC Medium", cursive; /* 设置字体 */
+            color: white; /* 字体颜色 */
+            font-size: 17px; /* 字体大小 */
+        }
+        .login-button:hover { /* 鼠标移入按钮范围时改变颜色 */
+            background: #5599FF;
+        }
+        .a-upload {
+            width: 200px;
+            height: 40px;
+            position: relative;
+            cursor: pointer;
+            color: #888;
+            background: #fafafa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            display: inline-block;
+            *display: inline;
+            *zoom: 1
+        }
+
+        .a-upload  input {
+            position: absolute;
+            font-size: 100px;
+            right: 0;
+            top: 0;
+            opacity: 0;
+            filter: alpha(opacity=0);
+            cursor: pointer
+        }
+
+        .a-upload:hover {
+            color: #444;
+            background: #eee;
+            border-color: #ccc;
+            text-decoration: none
+        }
+    </style>
+    <script>
+        var user = localStorage.getItem('user');
+        var jsonObj = JSON.parse(user);
+        var data = jsonObj.data;
+
+        var serverFiles = data.serverFiles;
+        var serverFilesStr = JSON.stringify(serverFiles);
+        var serverFilesStrs = serverFilesStr.substr(1, serverFilesStr.length-2).split(',');
+        var fileNamesStr = JSON.stringify(data.fileNames);
+        var fileNamesStrs = fileNamesStr.substr(1, fileNamesStr.length-2).split(',');
+
+        var userName = JSON.stringify(data.name);
+        userName = userName.substr(1, userName.length-2);
+
+        var userEmail = JSON.stringify(data.email);
+        userEmail = userEmail.substr(1, userEmail.length-2);
+
+        var str = "";
+
+        function download(index) {
+            var fileUuid = serverFilesStrs[index];
+            var url = '/file/download';
+
+            var form = $('<form>');
+            form.attr('style', 'display:none');
+            form.attr('target', '');
+            form.attr('method', 'post');
+            form.attr('action', url);
+
+            var input1 = $('<input>');
+            input1.attr('style', 'display:none');
+            input1.attr('name', 'fileUuid');
+            input1.attr('value', fileUuid);
+
+            $('body').append(form);
+            form.append(input1);
+
+            form.submit();
+            form.remove();
+        }
+        function delete_(index) {
+            var fileUuid = serverFilesStrs[index];
+            var url = '/file/delete';
+
+            var request = new XMLHttpRequest();
+            request.open('POST', url, true);
+            request.onreadystatechange = function () {
+                var str = request.responseText;
+                var result = JSON.parse(str);
+                if (result.code === 0) {
+                    alert("删除成功")
+                }
+                else {
+                    alert("删除失败")
+                }
+            };
+            request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            request.setRequestHeader("Access-Control-Allow-Headers", "*");
+            request.setRequestHeader("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS");
+            var str = 'fileUuid='+fileUuid;
+            request.send(str);
+        }
+        function upload() {
+            var url = '/file/upload?email='+userEmail;
+            var formData = new FormData();
+            var input = document.getElementById('file');
+
+            if (input.files.length === 0) {
+                alert('未选择文件');
+            }
+            else {
+                formData.append('file', input.files[0]);
+                var request = new XMLHttpRequest();
+                request.open('POST', url, true);
+                request.onreadystatechange = function() {
+                    var str = request.responseText;
+                    var result = JSON.parse(str);
+                    if (result.code === 0) {
+                        alert("上传成功")
+                    }
+                    else {
+                        alert("上传失败")
+                    }
+                };
+                request.setRequestHeader("Content-Type", "multipart/form-data");
+                request.send(formData);
+            }
+        }
+    </script>
+</head>
+<body>
+<div align="center">
+    <table>
+        <script>
+            document.write("<span style=\"font-family: 'PingFang SC Medium', serif; font-size: 1.5em\">"+userName+"</span>"+"<br>");
+            for (i = 0; i < serverFilesStrs.length-1; ++ i) {
+                str += "<tr>";
+                str += "<td width=\"600px\">";
+                str += "<span style=\"font-family: 'PingFang SC Medium', sans-serif\">";
+                str += fileNamesStrs[i];
+                str += "</span>";
+                str += "</td>";
+                str += "<td>";
+                str += "<input type=\"button\" class='login-button' value=\"下载\" onclick=\"download("+i+")\">";
+                str += "</td>";
+                str += "<td>";
+                str += "<input type=\"button\" class='login-button' value=\"删除\" onclick=\"delete_("+i+")\">";
+                str += "</td>";
+                str += "</tr>";
+            }
+            document.write(str);
+        </script>
+        <tr>
+            <td>
+                <input type="file" class="a-upload" name="file" id="file">
+            </td>
+            <td>
+                <input type="button" class="login-button" value="上传" onclick="upload()">
+            </td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>

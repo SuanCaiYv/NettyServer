@@ -1,0 +1,84 @@
+if (httpContents.size() == 1) {
+            HttpContent firstContent = httpContents.getFirst();
+            httpContents.removeFirst();
+            byte[] bytesFirst = new byte[firstContent.content().readableBytes()];
+            firstContent.content().readBytes(bytesFirst);
+            ReferenceCountUtil.release(firstContent);
+            InputStream inputStream = new ByteArrayInputStream(bytesFirst);
+            // 去除头部分隔符和提取出文件名
+            StringBuilder stringBuilder = new StringBuilder();
+            int num = 0;
+            int cnt = 0;
+            while (true) {
+                int a = inputStream.read();
+                char c = (char) a;
+                stringBuilder.append(c);
+                if (a == '\r') {
+                    ++cnt;
+                }
+                if (cnt == 4) {
+                    a = inputStream.read();
+                    break;
+                }
+                ++num;
+            }
+            String title = stringBuilder.toString();
+            title = new String(title.getBytes(StandardCharsets.ISO_8859_1));
+            String[] titles = title.split("\r\n");
+            String fileName = titles[1].split(";")[2].split("=")[1].replace("\"", "");
+            file = BaseUtil.forceCreateFile(SystemConstant.BASE_PATH + fileName);
+            fileOutputStream = new FileOutputStream(file);
+            // +2是因为还有'\r\n'这两个字符
+            fileOutputStream.write(bytesFirst, num + 2, bytesFirst.length - boundary.length() - num - 2 - 5);
+            fileOutputStream.flush();
+        }
+        else {
+            HttpContent firstContent = httpContents.getFirst();
+            httpContents.removeFirst();
+            byte[] bytesFirst = new byte[firstContent.content().readableBytes()];
+            firstContent.content().readBytes(bytesFirst);
+            ReferenceCountUtil.release(firstContent);
+            InputStream inputStream = new ByteArrayInputStream(bytesFirst);
+            // 去除头部分隔符和提取出文件名
+            StringBuilder stringBuilder = new StringBuilder();
+            int num = 0;
+            int cnt = 0;
+            while (true) {
+                int a = inputStream.read();
+                char c = (char) a;
+                stringBuilder.append(c);
+                if (a == '\r') {
+                    ++cnt;
+                }
+                if (cnt == 4) {
+                    a = inputStream.read();
+                    break;
+                }
+                ++num;
+            }
+            String title = stringBuilder.toString();
+            title = new String(title.getBytes(StandardCharsets.ISO_8859_1));
+            String[] titles = title.split("\r\n");
+            String fileName = titles[1].split(";")[2].split("=")[1].replace("\"", "");
+            file = BaseUtil.forceCreateFile(SystemConstant.BASE_PATH + fileName);
+            fileOutputStream = new FileOutputStream(file);
+            // +2是因为还有'\r\n'这两个字符
+            fileOutputStream.write(bytesFirst, num + 2, bytesFirst.length - num - 2);
+            HttpContent lastContent = httpContents.getLast();
+            httpContents.removeLast();
+            byte[] bytesLast = new byte[lastContent.content().readableBytes()];
+            lastContent.content().readBytes(bytesLast);
+            ReferenceCountUtil.release(lastContent);
+            while (httpContents.size() > 0) {
+                HttpContent httpContent = httpContents.getFirst();
+                byte[] bytes = new byte[httpContent.content().readableBytes()];
+                httpContent.content().readBytes(bytes);
+                fileOutputStream.write(bytes, 0, bytes.length);
+                httpContents.removeFirst();
+                ReferenceCountUtil.release(httpContent);
+            }
+            // -5是因为, 有两个'\r\n'和一个'\r'一共五个不可见字符也要算进去
+            fileOutputStream.write(bytesLast, 0, bytesLast.length - boundary.length() - 5);
+            fileOutputStream.flush();
+        }
+}

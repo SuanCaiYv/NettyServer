@@ -1,0 +1,5 @@
+cd /home/joker/IdeaProjects/NettyServer/src/main/resources
+scp -r template root@202.182.126.89:/home/
+
+cd /home/joker/IdeaProjects/NettyServer/target
+scp NettyServer-1.0-SNAPSHOT.jar root@202.182.126.89:/home

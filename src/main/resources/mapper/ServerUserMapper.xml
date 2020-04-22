@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nettyserver.org.dao.ServerUserMapper">
+  <resultMap id="BaseResultMap" type="com.nettyserver.org.pojo.ServerUser">
+    <id column="email" jdbcType="VARCHAR" property="email" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="level" jdbcType="INTEGER" property="level" />
+    <result column="server_files" jdbcType="VARCHAR" property="serverFiles" />
+  </resultMap>
+  <select id="selectByEmail" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select *
+    from server_user
+    where email = #{email,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from server_user
+    where email = #{email,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.nettyserver.org.pojo.ServerUser">
+    insert into server_user (email, name, password, 
+      level, server_files)
+    values (#{email,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, 
+      #{level,jdbcType=INTEGER}, #{serverFiles,jdbcType=VARCHAR})
+  </insert>
+  <resultMap id="ServerUserMap" type="com.nettyserver.org.pojo.ServerUser">
+    <id column="email" jdbcType="VARCHAR" property="email" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="level" jdbcType="INTEGER" property="level" />
+    <result column="server_files" jdbcType="VARCHAR" property="serverFiles" />
+  </resultMap>
+  <update id="updateByUserEmail" parameterType="com.nettyserver.org.pojo.ServerUser">
+    update server_user
+    set name = #{name,jdbcType=VARCHAR},
+      password = #{password,jdbcType=VARCHAR},
+      level = #{level,jdbcType=INTEGER},
+      server_files = #{serverFiles,jdbcType=VARCHAR}
+    where email = #{email,jdbcType=VARCHAR}
+  </update>
+</mapper>
